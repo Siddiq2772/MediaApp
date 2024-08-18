@@ -97,6 +97,7 @@ private ImageView play;
     public void onBackPressed() {
         mediaPlayer.stop();
         super.onBackPressed();
+        mediaPlayer.release();
         // Call the super class's onBackPressed method to handle the default back button behavior
 
     }
