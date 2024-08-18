@@ -1,7 +1,10 @@
 package com.example.media;
 
 
+import android.bluetooth.BluetoothDevice;
+import android.content.BroadcastReceiver;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Bundle;
@@ -21,6 +24,7 @@ private TextView textView,time,progresss;
 private SeekBar seekBar;
 private MediaPlayer mediaPlayer ;
 private ImageView play;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -39,6 +43,7 @@ private ImageView play;
         textView.setText(intent.getStringExtra("current"));
         Uri uri = bundle.getParcelable("uri");
         mediaPlayer = MediaPlayer.create(this, uri);
+
 
         time.setText(String.valueOf(
                 mediaPlayer.getDuration()/60000 == 0? mediaPlayer.getDuration()/1000 +"sec": mediaPlayer.getDuration()/60000+" mins"
@@ -74,7 +79,7 @@ private ImageView play;
                     while(cp<=mediaPlayer.getCurrentPosition()){
                         cp = mediaPlayer.getCurrentPosition();
                         seekBar.setProgress(cp);
-                        sleep(800);
+                        sleep(1000);
                     }
                 }
                 catch (Exception e){
@@ -92,12 +97,13 @@ private ImageView play;
             }
         });
 
+
     }
     @Override
     public void onBackPressed() {
         mediaPlayer.stop();
         super.onBackPressed();
-        mediaPlayer.release();
+      //  mediaPlayer.release();
         // Call the super class's onBackPressed method to handle the default back button behavior
 
     }
