@@ -6,13 +6,11 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.Manifest;
 import android.os.Environment;
-import android.os.Parcelable;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ListView;
-import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
@@ -33,8 +31,8 @@ import java.util.ArrayList;
 public class MainActivity extends AppCompatActivity {
             private ListView listView;
            MediaPlayer mediaPlayer;
-           private ArrayList<File> mp3;
-           private ArrayList<File> mp4;
+          private static ArrayList<File> mp3;
+
            private Button button;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -47,14 +45,13 @@ public class MainActivity extends AppCompatActivity {
             return insets;
         });
             listView = findViewById(R.id.listView);
-
+        mp3 = fetchmp3(Environment.getExternalStorageDirectory());
         Dexter.withContext(this)
                 .withPermission(Manifest.permission.READ_EXTERNAL_STORAGE)
                 .withListener(new PermissionListener() {
                     @Override
                     public void onPermissionGranted(PermissionGrantedResponse permissionGrantedResponse) {
-                         mp3 = fetchmp3(Environment.getExternalStorageDirectory());
-                         mp4 = fetchmp4(Environment.getExternalStorageDirectory());
+
 
                        MP3(new View(MainActivity.this));
                     }
@@ -72,7 +69,7 @@ public class MainActivity extends AppCompatActivity {
                 })
                 .check();
     }
-           public ArrayList<File> fetchmp3(File file){
+           public static ArrayList fetchmp3(File file){
                     ArrayList arrayList = new ArrayList();
                     File[] mp3 = file.listFiles();
                     if(mp3!=null){
@@ -82,39 +79,36 @@ public class MainActivity extends AppCompatActivity {
                                 arrayList.addAll(fetchmp3(myfile));
                             else if(myfile.getName().endsWith(".mp3")&& !myfile.getName().startsWith("."))
                                 arrayList.add(myfile);
+                            else if(myfile.getName().endsWith(".mp4")&& !myfile.getName().startsWith("."))
+                                arrayList.add(myfile);
+
+
                         }
-                    }
+                        }
                     return arrayList;
            }
-    public ArrayList<File> fetchmp4(File file){
-        ArrayList arrayList = new ArrayList();
-        File[] mp4 = file.listFiles();
-        if(mp4!=null){
-            for (File myfile:
-                    mp4) {
-                if(!myfile.isHidden()&& myfile.isDirectory())
-                    arrayList.addAll(fetchmp4(myfile));
-                else if(myfile.getName().endsWith(".mp4")&& !myfile.getName().startsWith("."))
-                    arrayList.add(myfile);
-            }
-        }
-        return arrayList;
-    }
+
 
     public void MP3(View v){
         button= findViewById(R.id.button);
+        ArrayList<File> m = new ArrayList<>() ;
+        for (int i = 0; i < mp3.size(); i++)
+            if(mp3.get(i).getName().endsWith(".mp3"))
+                m.add(mp3.get(i));
+
         if (button.getText().equals("MP3")){
             button.setText("MP4");
-            String[] items = new String[mp3.size()];
-            for (int i = 0; i < mp3.size(); i++) {
-                items[i]= mp3.get(i).getName();
-            }
+            String[] items = new String[m.size()];
+            for (int i = 0; i < m.size(); i++)
+                items[i]= m.get(i).getName();
+
+
             ArrayAdapter<String> adapter = new ArrayAdapter<>(MainActivity.this, android.R.layout.simple_list_item_1,items);
             listView.setAdapter(adapter);
             listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
                 @Override
                 public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                    Uri uri = Uri.parse(mp3.get(position).toString());
+                    Uri uri = Uri.parse(m.get(position).toString());
 
                     Intent intent = new Intent(MainActivity.this, AudioPlayer.class);
                     String current = listView.getItemAtPosition(position).toString();
@@ -132,19 +126,24 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void MP4(View v){
-        String[] items = new String[mp4.size()];
-        for (int i = 0; i < mp4.size(); i++) {
-            items[i]= mp4.get(i).getName();
-        }
+        ArrayList<File> m = new ArrayList<>() ;
+        for (int i = 0; i < mp3.size(); i++)
+            if(mp3.get(i).getName().endsWith(".mp4"))
+                m.add(mp3.get(i));
+        String[] items = new String[m.size()];
+
+        for (int i = 0; i < m.size(); i++)
+            items[i]= m.get(i).getName();
         ArrayAdapter<String> adapter = new ArrayAdapter<>(MainActivity.this, android.R.layout.simple_list_item_1,items);
         listView.setAdapter(adapter);
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                Uri uri = Uri.parse(mp4.get(position).toString());
-
-                Intent intent = new Intent(Intent.ACTION_VIEW,uri);
-                intent.setDataAndType(uri,"video/mp4");
+                Uri uri = Uri.parse(m.get(position).toString());
+                Intent intent = new Intent(MainActivity.this, video.class);
+                String current = listView.getItemAtPosition(position).toString();
+                intent.putExtra("uri",uri);
+                intent.putExtra("current",current);
                 startActivity(intent);
 
             }
